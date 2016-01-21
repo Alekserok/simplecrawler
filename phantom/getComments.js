@@ -1,6 +1,7 @@
 'use strict';
 
-//var sys = require('system');
+var sys = require('system');
+var args = sys.args;
 var page = require('webpage').create();
 
 

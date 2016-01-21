@@ -14,7 +14,7 @@ var childArgs = [
 ]
 
 var exec = require('child_process').exec;
-var child = exec('phantomjs ../main.js', {h:1});
+var child = exec('phantomjs ./getComments.js');
 child.stdout.on('data', function(data) {
     console.log('stdout: ' + data);
 });
