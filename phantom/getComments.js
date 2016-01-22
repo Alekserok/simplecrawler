@@ -4,6 +4,50 @@ var sys = require('system');
 var args = sys.args;
 var page = require('webpage').create();
 
+//get params from system args
+var params = JSON.parse(args[1]);
+parseSite(params.config, params.id, params.url);
+
+//TODO: use random user agents
+var useragent = [];
+useragent.push('Opera/9.80 (X11; Linux x86_64; U; fr) Presto/2.9.168 Version/11.50');
+useragent.push('Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25');
+useragent.push('Opera/12.02 (Android 4.1; Linux; Opera Mobi/ADR-1111101157; U; en-US) Presto/2.9.201 Version/12.02');
+
+//block pages download
+page.onResourceRequested = function (requestData, request) {
+    if ((/http:\/\/.+?\.css$/gi).test(requestData['url'])) {
+        request.abort();
+    }
+};
+
+//block services
+page.onResourceRequested = function (requestData, request) {
+    if (
+        (/\.doubleclick\./gi.test(requestData['url'])) ||
+        (/\.pubmatic\.com$/gi.test(requestData['url'])) ||
+        (/yandex/gi.test(requestData['url'])) ||
+        (/google/gi.test(requestData['url'])) ||
+        (/gstatic/gi.test(requestData['url']))
+    ) {
+        //console.error("BLOCKED: " + requestData['url']);
+        request.abort();
+        return;
+    }
+};
+
+/*
+//for debug mode
+page.onResourceRequested = function (request) {
+ console.log('Request ' + JSON.stringify(request, undefined, 4));
+ };
+
+page.onError = function (msg, trace) {
+    console.log(msg);
+    trace.forEach(function (item) {
+        console.log('  ', item.file, ':', item.line);
+    });
+};*/
 
 function exit(code) {
     setTimeout(function () {
@@ -13,49 +57,17 @@ function exit(code) {
     };
 }
 
-function getConfig() {
-    page.open('http://91.196.196.24:8080/task', function (status) {
-        console.log('Get config Status: ' + status);
-
-        var body = JSON.parse(page.plainText);
-        console.log('id ' + body.task._id);
-        if (body.task == 'not found') {
-            console.log('no tasks')
-        } else {
-            var config = JSON.parse(body.task.config).getComments;
-            /*var config = {
-                url: 'http://kp.ua/politics/526651-premer-polshy-zaiavyla-o-myllyone-pryniatykh-ukraynskykh-myhrantov',
-                baseUrl: '',
-                article: {
-                    keywords: 'meta[name=keywords]',
-                    description: 'meta[name=description]',
-                    body: '.content'
-                },
-                comments: {
-                    parent: '.comment',
-                    text: '.comment__text',
-                    date: '.comment__date',
-                    author: {
-                        name: '.comment__info > a',
-                        social: '.comment__info > a'
-                    }
-                }
-            };*/
-            parse(config, body.task._id);
-        }
-    });
-}
-
-function parse(config, id) {
-console.log('start parsing' + config.url);
-    /*page.onConsoleMessage = function (msg) {
-        console.log(msg);
-    };*/
-    page.open(config.url, function (status) {
+function parseSite(config, id, url) {
+    console.log('start parsing ' + url);
+    //for debug mode
+    /* page.onConsoleMessage = function (msg) {
+     console.log(msg);
+     };*/
+    page.open(url, function (status) {
 
         if (status === 'success') {
 
-            var Links = page.evaluate(function (config, id, sendResult) {
+            var result = page.evaluate(function (config) {
                 var comments = [];
                 $(config.comments.parent).each(function (index) {
                     comments.push({
@@ -74,34 +86,21 @@ console.log('start parsing' + config.url);
                     comments: comments,
                     commentsCount: $(config.comments.parent).length
                 };
-                /*$.ajax({
-                    async: false, // this
-                    url: 'http://91.196.196.24:8080/task',
-                    data: { filename: 'C:\\wamp\\www\\images\\0.png' },
-                    type: 'post',
-                    success: function (output) {
-                        console.log('Solved');
-                    },
-                });*/
-                //sendResult(result, id);
+
                 return result;
-            }, config, id, sendResult);
 
-                // Вывод результата через обычный console.log
-            console.log(Links.comments.length);
-            sendResult(Links, id);
-            //      console.log(process.argv[2])
+            }, config);
+
+            console.log(result.comments.length);
+            sendResult(result, id);
         }
-
-        // Закрываем PhantomJS
-        //exit();
     });
 }
 
 function sendResult(result, id) {
 
-var url = 'http://91.196.196.24:8080/task';
-console.log('saving ' + result.comments.length + ' id ' +id);
+    var url = 'http://91.196.196.24:8080/task';
+    console.log('saving ' + result.comments.length + ' comments ' + ' id ' + id);
     var settings = {
         operation: "POST",
         encoding: "utf8",
@@ -120,11 +119,7 @@ console.log('saving ' + result.comments.length + ' id ' +id);
     page.open(url, settings, function (status) {
         console.log('Saving status: ' + status);
         console.log(page.url);
-        console.log(page.plainText)
+        console.log(page.plainText);
+        exit(); //close phantom
     });
-console.log(settings.toString());
-    console.log(result.comments.length, result.keywords);
 }
-
-getConfig();
-//setInterval(getConfig, 5000);
