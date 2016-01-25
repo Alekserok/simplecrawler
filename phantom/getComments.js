@@ -6,6 +6,7 @@ var page = require('webpage').create();
 
 //get params from system args
 var params = JSON.parse(args[1]);
+
 parseSite(params.config, params.id, params.url);
 
 //TODO: use random user agents
@@ -37,17 +38,17 @@ page.onResourceRequested = function (requestData, request) {
 };
 
 /*
-//for debug mode
-page.onResourceRequested = function (request) {
+ //for debug mode
+ page.onResourceRequested = function (request) {
  console.log('Request ' + JSON.stringify(request, undefined, 4));
  };
 
-page.onError = function (msg, trace) {
-    console.log(msg);
-    trace.forEach(function (item) {
-        console.log('  ', item.file, ':', item.line);
-    });
-};*/
+ page.onError = function (msg, trace) {
+ console.log(msg);
+ trace.forEach(function (item) {
+ console.log('  ', item.file, ':', item.line);
+ });
+ };*/
 
 function exit(code) {
     setTimeout(function () {
@@ -70,28 +71,37 @@ function parseSite(config, id, url) {
             var result = page.evaluate(function (config) {
                 var comments = [];
                 $(config.comments.parent).each(function (index) {
+                    var social = $(this).find(config.comments.author.social).attr('href');
+                    var avatar = $(this).find(config.comments.author.avatar).attr('src');
+                    if(social != undefined && social[0] == '/') {
+                        social = config.baseUrl + social;
+                    }
+                    if(avatar != undefined && avatar[0] == '/') {
+                        avatar = config.baseUrl + avatar;
+                    }
                     comments.push({
                         date: $(this).find(config.comments.date).text(),
                         text: $(this).find(config.comments.text).text(),
                         author: {
                             name: $(this).find(config.comments.author.name).text(),
-                            social: config.baseUrl + $(this).find(config.comments.author.social).attr('href')
+                            social: social,
+                            avatar: avatar
                         }
                     });
                 });
                 var result = {
+                    title: $(config.article.title).text(),
+                    date: $(config.article.date).text(),
                     keywords: $(config.article.keywords).attr('content'),
                     description: $(config.article.description).attr('content'),
                     body: $(config.article.body).html(),
                     comments: comments,
-                    commentsCount: $(config.comments.parent).length
                 };
 
                 return result;
 
             }, config);
 
-            console.log(result.comments.length);
             sendResult(result, id);
         }
     });
