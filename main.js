@@ -34,7 +34,7 @@ function getTask() {
                     if(config.parser == 'phantom') {
                         //run phantom
                         var childArgs = [
-                            path.join('/phantom/getComments.js'),
+                            path.join('./phantom/getComments.js'),
                             JSON.stringify({config: config, url: url, id: id})
                         ];
                         parse('phantomjs', childArgs);
