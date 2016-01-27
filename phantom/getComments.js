@@ -79,6 +79,12 @@ function parseSite(config, id, url) {
                     if(avatar != undefined && avatar[0] == '/') {
                         avatar = config.baseUrl + avatar;
                     }
+                    if (social == undefined) {
+                        social = null;
+                    }
+                    if (avatar == undefined) {
+                        avatar = null;
+                    }
                     comments.push({
                         date: $(this).find(config.comments.date).text(),
                         text: $(this).find(config.comments.text).text(),

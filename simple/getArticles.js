@@ -25,7 +25,7 @@ function parse(url, config, id, visitedCount, result) {
             //console.log($(config.article.parent).length);
             $(config.article.parent).each(function (index) {
                 var href = $(this).find(config.article.href).attr('href');
-                if(href != undefined && href[0] == '/') {
+                if (href != undefined && href[0] == '/') {
                     href = config.baseUrl + href;
                 }
                 result.push({
@@ -33,8 +33,11 @@ function parse(url, config, id, visitedCount, result) {
                 });
             });
             var nextPage = $(config.nextPage).attr('href');
+            if (nextPage != undefined && nextPage[0] == '/') {
+                nextPage = config.baseUrl + nextPage;
+            }
             if (nextPage != undefined && (config.limit == 0 || config.limit > ++visitedCount)) {
-                parse(config.baseUrl + nextPage, config, id, visitedCount, result)
+                parse(nextPage, config, id, visitedCount, result)
             } else {
                 console.log(result.length);
                 save(id, result);
