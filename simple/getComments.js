@@ -8,6 +8,7 @@ var params = JSON.parse(process.argv[2]);
 parse(params.url, params.config, params.id);
 
 function parse(pageToVisit, config, id) {
+    console.log('Visiting ' + pageToVisit);
     request(pageToVisit, function (error, response, body) {
         if (error) {
             console.log("Error: " + error);
@@ -54,6 +55,7 @@ function parse(pageToVisit, config, id) {
 };
 
 function save(id, result) {
+    console.log('saving ' + result.comments.length + ' comments id: ' + id);
     request({
         url: 'http://91.196.196.24:8080/task',
         json: {
