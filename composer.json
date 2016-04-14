@@ -1,5 +1,5 @@
 {
-    "name": "Alekserok/Pen",
+    "name": "alekserok/simplecrawler",
     "description": "test",
     "require": {
         "php": ">=5.3.0"
