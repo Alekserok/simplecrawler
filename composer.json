@@ -1,0 +1,7 @@
+{
+    "name": "Alekserok/Pen",
+    "description": "test",
+    "require": {
+        "php": ">=5.3.0"
+    }
+}
