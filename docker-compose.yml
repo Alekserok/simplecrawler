@@ -1,0 +1,8 @@
+crawler_composed:
+  build: .
+  ports:
+   - "5000:5000"
+  volumes:
+   - .:/code
+phantomjs:
+  image: cmfatih/phantomjs
